@@ -1,5 +1,5 @@
 var fs = require('fs');
-var util = require('util');
+// var util = require('util');
 const { exec } = require('child_process');
 
 function queryOrbs() {
