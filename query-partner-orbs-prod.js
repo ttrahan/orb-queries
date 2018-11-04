@@ -5,38 +5,33 @@ function queryOrbs() {
 	// query production orbs from CircleCI registry
     return new Promise(function(resolve, reject) {
     	// Do async job
-		exec('circleci orb list -u > data/partner-orbs/prod-orbs.txt', function(err) {
-			if (err) {
-				reject(err);
+		exec('circleci orb list -u', function(error, stdout, stderr) {
+			if (error) {
+				reject(error);
 			} else {
 				console.log("Production orbs queried from registry...") 
-				resolve();
+				console.log(stdout);
+				resolve(stdout);
 			}
 		});
     })
 }
 
-function loadProdOrbs() {
+function loadProdOrbs(result) {
 	// read and prepare list of orbs
-	const dataFile = './data/partner-orbs/prod-orbs.txt'
+	const prodOrbsRaw = result;
+	// const dataFile = './data/partner-orbs/prod-orbs.txt'
     return new Promise(function(resolve, reject) {
     	// Do async job
-		fs.readFile(dataFile, 'utf8', function(err, data) {
-			if (err) {
-				reject(err);
-			} else {
-				// split prodOrbs array into namespaces and orbs/versions
-				var dataByLine = data.split("\n")
-				var prodOrbs = dataByLine.slice(2,-1); 
-				var prodOrbsSplit = [];
-				prodOrbs.forEach(function(orb) {
-					prodOrbsSplit.push(orb.split("/"));
-				})
-				console.log('Production orbs read from file...');
-				resolve(prodOrbsSplit);
-			}
-		});
-    })
+		var prodOrbsRaw = result.split("\n")
+		var prodOrbs = prodOrbsRaw.slice(2,-1); 
+		var prodOrbsSplit = [];
+		prodOrbs.forEach(function(orb) {
+			prodOrbsSplit.push(orb.split("/"));
+		})
+		console.log('Production orbs read from file...');
+		resolve(prodOrbsSplit);
+	});
 }
 
 function loadPartners(result) {
