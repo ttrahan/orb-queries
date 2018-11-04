@@ -1,5 +1,4 @@
-var fs = require('fs');
-// var util = require('util');
+const fs = require('fs');
 const { exec } = require('child_process');
 
 function queryOrbs() {
@@ -87,21 +86,57 @@ function filterPartnerOrbs(result) {
 		partnerOrbsSplit.forEach(function(orb) {
 			partnerOrbs.push(orb[0] + "/" + orb[1])
 		});
-		resolve(partnerOrbs);
+		resolve(partnerOrbs, partnerOrbsSplit);
 	});
 }
 
 function outputPartnerOrbs(result) {
-	// output
-	partnerOrbs = result;	
-	console.log('\nPartner-related orbs...');
-	console.log(partnerOrbs);
-	fs.writeFile('data/partner-orbs/partner-orbs.csv', partnerOrbs.sort(), err => {
-		if (err) throw err;
+    return new Promise(function(resolve, reject) {
+		// output partner orbs to console and file
+		partnerOrbs = result;	
+		console.log('\nPartner-related orbs:');
+		console.log(partnerOrbs);
+		fs.writeFile('data/partner-orbs/partner-orbs.csv', partnerOrbs.sort(), err => {
+			if (err) throw err;
+		});
+		resolve(partnerOrbs);
 	});
 }
 
-var fnlist = [ queryOrbs, loadProdOrbs, loadPartners, filterPartnerOrbs, outputPartnerOrbs ];
+function summarizePartnerOrbs(result) {
+	// summary stats for partner-related orbs 
+	const partnerOrbs = result;	
+	console.log('\nSummary stats:');
+    const numPartnerRelatedOrbs = partnerOrbs.length;
+    const numCircleciPartnerOrbs = partnerOrbs.filter(orb => orb.startsWith('circleci'));
+    const numPartnerOrbs = numPartnerRelatedOrbs - numCircleciPartnerOrbs.length
+	const numPartnerNamespaces = Object.create(null);
+	// split partner orbs by namespace and orb
+	var partnerOrbsSplit = [];
+	partnerOrbs.forEach(function(orb) {
+		partnerOrbsSplit.push(orb.split("/"));
+	})
+	// determine unique namespaces based on first 7 characters
+	partnerOrbsSplit.forEach(orb => {
+		numPartnerNamespaces[orb[0]] = true;
+	});
+	const uniqueNamespaces = Object.keys(numPartnerNamespaces);		
+	let unique = [...new Set(uniqueNamespaces)];
+    var unique7 = [];
+	unique.forEach(function(ns) {
+		unique7.push(ns.slice(0,7));
+	});
+	unique7 = [...new Set(unique7)];
+	// remove circleci from list of unique partner namespaces
+	const numUniqueNamespaces = unique7.length - 1;
+	console.log('Number of partner-related orbs: ' + numPartnerRelatedOrbs);
+	console.log('Number of partner orbs: ' + numPartnerOrbs);
+	console.log('Number of CircleCI partner-related orbs: ' + numCircleciPartnerOrbs.length);
+	console.log('Number of unique partner namespaces: ' + numUniqueNamespaces);
+}
+
+var fnlist = [ queryOrbs, loadProdOrbs, loadPartners, filterPartnerOrbs, 
+				outputPartnerOrbs, summarizePartnerOrbs ];
 
 function main(list) {
 	var p = Promise.resolve();
