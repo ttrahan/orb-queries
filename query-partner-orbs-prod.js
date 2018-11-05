@@ -10,7 +10,6 @@ function queryOrbs() {
 				reject(error);
 			} else {
 				console.log("Production orbs queried from registry...") 
-				console.log(stdout);
 				resolve(stdout);
 			}
 		});
@@ -124,6 +123,7 @@ function summarizePartnerOrbs(result) {
 	unique7 = [...new Set(unique7)];
 	// remove circleci from list of unique partner namespaces
 	const numUniqueNamespaces = unique7.length - 1;
+	// print summary stats to console
 	console.log('Number of partner-related orbs: ' + numPartnerRelatedOrbs);
 	console.log('Number of partner orbs: ' + numPartnerOrbs);
 	console.log('Number of CircleCI partner-related orbs: ' + numCircleciPartnerOrbs.length);
